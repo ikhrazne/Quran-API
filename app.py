@@ -17,7 +17,7 @@ def get_surah_by_id(surah_id: int):
         "revolution_order": "",
         "content": ""
         }
-    get_surah_query = 'select surah_name, type, nyah, revolution_order, ayat_text from surah join ayat on surah.surah_id = ayat.fk_surah_id where surah.surah_id = ? order by ayat_id asc'
+    get_surah_query = 'select surah_name, type, nyah, revolution_order, ayat_text, ayat_id from surah join ayat on surah.surah_id = ayat.fk_surah_id where surah.surah_id = ? order by ayat_id asc'
     
     cursor = conn.cursor()
     cursor.execute(get_surah_query, surah_id)
@@ -30,7 +30,7 @@ def get_surah_by_id(surah_id: int):
             result["nyah"] = row[2]
             result["revolution_order"] = row[3]
         
-        result["content"] = result["content"] + row[4]
+        result["content"] = result["content"] + " " + str(row[5]) + " " + row[4]
     
 
     return result
@@ -45,7 +45,7 @@ def get_surah_by_name(name: str):
         "revolution_order": "",
         "content": ""
         }
-    get_surah_query = "select surah_name, type, nyah, revolution_order, ayat_text from surah join ayat on surah.surah_id where surah.surah_name = ? order by ayat_id asc"
+    get_surah_query = "select surah_name, type, nyah, revolution_order, ayat_text, ayat_id from surah join ayat on surah.surah_id where surah.surah_name = ? order by ayat_id asc"
     
     cursor = conn.cursor()
     cursor.execute(get_surah_query, name)
@@ -58,7 +58,7 @@ def get_surah_by_name(name: str):
             result["nyah"] = row[2]
             result["revolution_order"] = row[3]
 
-        result["content"] = result["content"] + row[4]
+        result["content"] = result["content"] + " " + str(row[5]) + " " + row[4]
     
     return result
 
