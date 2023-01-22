@@ -1,7 +1,7 @@
 
 import json
 import re
-
+from connection import conn
 
 def import_surats():
     ayats = clean_ayat_data()
@@ -18,16 +18,21 @@ def import_surats():
         type = surah_meta_data["type"]
         nayah = surah_meta_data["nAyah"]
         revelotion_order = surah_meta_data["revelationOrder"]
-
-        add_surah_query = "insert into surah(surah_id, name, type, nyah, revelotion_order) values(?,?,?,?,?)"
+        
+        # import surah_meta_data to database
+        add_surah_query = "insert into surah(surah_id, surah_name, type, nyah, revolution_order) values(?,?,?,?,?)"
+        cursor.execute(add_surah_query, surah_number, name, type, nayah, revelotion_order)
+        print(f"surah number {surah_number} has been imported !")
 
         _start = int(surah_meta_data["start"])
         _end = int(surah_meta_data["end"])
 
-        for i in range(_start, _end):
+        for i in range(_start, _end + 1):
             aya = ayats[i]
             foreign_key = surah_number
-            add_ayat_query = "insert into ayat(ayat_id, aya, fk_surah_id) values(?, ?, ?)"
+            #import aya to database
+            add_ayat_query = "insert into ayat(ayat_id, ayat_text, fk_surah_id) values(?, ?, ?)"
+            cursor.execute(add_ayat_query, i, aya, foreign_key)
 
 
 def clean_ayat_data():
@@ -52,4 +57,13 @@ def clean_ayat_data():
 
 
 if __name__ == "__main__":
+    conn = conn()
+    
+    # sql cursor
+    cursor = conn.cursor()
+
     import_surats()
+    
+    # commit the changes into database
+    cursor.commit()
+    cursor.close()
