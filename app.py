@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 import pyodbc
+from datetime import datetime
 
 app = FastAPI()
 
@@ -10,6 +11,9 @@ conn = pyodbc.connect(r'Driver={SQL Server};Server=MOHAMED\SQLEXPRESS;Database=Q
 
 @app.get("/surah/{surah_id}")
 def get_surah_by_id(surah_id: int):
+    with open(r'logs.txt', "w") as file:
+        file.write(f"{str(datetime.now())} GET /surah/{str(surah_id)}\n")
+
     result = {
         "name": "",
         "type": "",
@@ -38,6 +42,9 @@ def get_surah_by_id(surah_id: int):
 
 @app.get("/surah/{name}")
 def get_surah_by_name(name: str):
+    with open(r'logs.txt', "w") as file:
+        file.write(f"{str(datetime.now())} GET /surah/{name}\n")
+
     result = {
         "name": "",
         "type": "",
@@ -63,35 +70,42 @@ def get_surah_by_name(name: str):
     return result
 
 
-@app.get("/ayat/{surah_number}/{ayat_number}")
-def get_ayat_by_surah_number(surah_number: int, ayat_number: int):
+@app.get("/ayat/{surah_id}/{ayat_id}")
+def get_ayat_by_surah_number(surah_id: int, ayat_id: int):
+    with open(r'logs.txt', "w") as file:
+        file.write(f"{str(datetime.now())} GET /ayat/{str(surah_id)}/{str(ayat_id)}\n")
+
     result = {
-        "surah_number": surah_number,
-        "ayat_number": ayat_number,
+        "surah_id": surah_id,
+        "ayat_id": ayat_id,
         "content": ""
     }
     get_ayat_query = 'select ayat_text from ayat where fk_surah_number = ? and ayat_id = ?'
 
     cursor = conn.cursor()
-    cursor.execute(get_ayat_query, surah_number, ayat_number)
+    cursor.execute(get_ayat_query, surah_id, ayat_id)
     result["content"] = cursor.fetchone()[0]
 
     return result
 
 
-@app.get("/ayat/{surah_name}/{ayat_number}")
-def get_ayat_by_surah_name(surah_name: int, ayat_number: int):
+@app.get("/ayat/{surah_name}/{ayat_id}")
+def get_ayat_by_surah_name(surah_name: int, ayat_id: int):
+    with open(r'logs.txt', "w") as file:
+        file.write(f"{str(datetime.now())} GET /surah/{surah_name}/{str(ayat_id)}\n")
+
     result = {
         "surah_name": surah_name,
-        "ayat_number": ayat_number,
+        "ayat_number": ayat_id,
         "content": ""
     }
     get_ayat_query = 'select ayat_text from ayat join surah where ayat.fk_surah_id = surah.surah_id where surah_name = ?, and ayat_id = ?'
 
     cursor =  conn.cursor()
-    cursor.execute(get_ayat_query, surah_name, ayat_number)
+    cursor.execute(get_ayat_query, surah_name, ayat_id)
 
     result["content"] = cursor.fetchone()[0]
 
     return result
+
 
