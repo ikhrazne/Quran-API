@@ -1,42 +1,36 @@
-from fastapi import FastAPI
-import pyodbc
+from fastapi import FastAPI, Header
+import poyodbc
 from datetime import datetime
+from database import *
 
 app = FastAPI()
 
-## create connection
-conn = pyodbc.connect(r'Driver={SQL Server};Server=MOHAMED\SQLEXPRESS;Database=Quran;Trusted_Connection=yes;')
+@app.get("/quran")
+def get_complet_quran(lang="ar", accept= Header[None]):
+    
+    if accept not in ["application/pdf", "application/json", "text/plain"]:
+        raise HTTPException(status_code='400', detail="Media Type are not supported")
+    
+    with open(r'logging\logs.txt', "w") as file:
+        file.write(f"{str(datime.now())} GET /quran" {lang} {accept})
 
+    result = retrieve_quran(accept, lang)
+
+    if result['status'] == 'no content':
+        raise HTTPException(status_code='404', detail="No Ressource Found")
+    
 
 
 @app.get("/surah/{surah_id}")
 def get_surah_by_id(surah_id: int):
     with open(r'logs.txt', "w") as file:
         file.write(f"{str(datetime.now())} GET /surah/{str(surah_id)}\n")
-
-    result = {
-        "name": "",
-        "type": "",
-        "nyah": "",
-        "revolution_order": "",
-        "content": ""
-        }
-    get_surah_query = 'select surah_name, type, nyah, revolution_order, ayat_text, ayat_id from surah join ayat on surah.surah_id = ayat.fk_surah_id where surah.surah_id = ? order by ayat_id asc'
     
-    cursor = conn.cursor()
-    cursor.execute(get_surah_query, surah_id)
-    records = cursor.fetchall()
-
-    for row in records:
-        if len(result["name"]) == 0:
-            result["name"] = row[0]
-            result["type"] = row[1]
-            result["nyah"] = row[2]
-            result["revolution_order"] = row[3]
-        
-        result["content"] = result["content"] + " " + str(row[5]) + " " + row[4]
+    result = retrieve_surah(surah_id)
     
-
+    if len(result["content"]) == 0:
+        raise HTTPException(status_code="404", detail="NO Ressource found")
+    
     return result
 
 
@@ -44,29 +38,12 @@ def get_surah_by_id(surah_id: int):
 def get_surah_by_name(name: str):
     with open(r'logs.txt', "w") as file:
         file.write(f"{str(datetime.now())} GET /surah/{name}\n")
+    
+    result = retrieve_surah(surah_id)
+    
+    if len(result["content"]) == 0:
+        raise HTTPException(status_code="404", detail="NO Ressource found")
 
-    result = {
-        "name": "",
-        "type": "",
-        "nyah": "",
-        "revolution_order": "",
-        "content": ""
-        }
-    get_surah_query = "select surah_name, type, nyah, revolution_order, ayat_text, ayat_id from surah join ayat on surah.surah_id where surah.surah_name = ? order by ayat_id asc"
-    
-    cursor = conn.cursor()
-    cursor.execute(get_surah_query, name)
-    records = cursor.fetchall()
-    
-    for row in records:
-        if len(result["name"]) == 0:
-            result["name"] = row[0]
-            result["type"] = row[1]
-            result["nyah"] = row[2]
-            result["revolution_order"] = row[3]
-
-        result["content"] = result["content"] + " " + str(row[5]) + " " + row[4]
-    
     return result
 
 
