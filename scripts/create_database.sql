@@ -13,3 +13,6 @@ create table juz(juz_id int primary key, juz_number int);
 /* create ahzab */
 create table ahzab(hizb_id int primary key, hizb_number int);
 
+/* create files*/
+create table files(file_id uniqueidentifier identity primary key, lang varchar(5), pdf_file varbinary(max) filestream)
+
